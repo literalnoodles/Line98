@@ -6,34 +6,110 @@
 package line98;
 
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 
 /**
  *
  * @author prdox
  */
 public class Piece extends StackPane{
-//    private PieceType type;
+
+    private ColorType cType;
+    private PieceType pType;
     
-    public Piece(int x, int y) {
-        try {
-            relocate(x * Line98.TILE_SIZE, y * Line98.TILE_SIZE);
-            FileInputStream inputstream =
-                    new FileInputStream("./src/asset/20160713080812!GO_Poké_Ball.png");
-            Image image = new Image(inputstream);
-            ImageView imageView = new ImageView(image);
-            imageView.setFitHeight(30);
-            imageView.setFitHeight(30);
-            imageView.setPreserveRatio(true);
-            getChildren().addAll(imageView);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Piece.class.getName()).log(Level.SEVERE, null, ex);
+    enum ColorType {
+        YELLOW,
+        PINK,
+        RED,
+        GREEN,
+        AQUA,
+        BROWN,
+        BLUE
+    }
+    
+    enum PieceType {
+        SEED,
+        FULL,
+        DEAD
+    }
+    
+    private Color getColorFromType() {
+        switch(getColorType()) {
+            case YELLOW:
+                return Color.YELLOW;
+            case PINK:
+                return Color.PINK;
+            case RED:
+                return Color.RED;
+            case GREEN:
+                return Color.GREEN;
+            case AQUA:
+                return Color.AQUAMARINE;
+            case BROWN:
+                return Color.BROWN;
+            case BLUE:
+                return Color.BLUE;
+            default:
+                return Color.YELLOW;
+        }
+    }
+    
+    public ColorType getColorType() {
+        return this.cType;
+    }
+    
+    public PieceType getPieceType() {
+        return this.pType;
+    } 
+    
+    public Piece(PieceType pType, ColorType cType, int x, int y) {
+        this.cType = cType;
+        this.pType = pType;
+        int tileSize = Line98.TILE_SIZE;
+        relocate(x * tileSize, y * tileSize);
+        
+        double wSize, hSize, shadow = 0;
+        
+        if (pType == PieceType.FULL) {
+            wSize = 0.3125;
+            hSize = 0.26;
+            shadow = 0.07;
+        }
+        else {
+            wSize = 0.12;
+            hSize = 0.1;
+            shadow = 0.03;
+        }
+        
+        if (pType != PieceType.DEAD) {
+            Ellipse bg = new Ellipse(tileSize * wSize, tileSize * hSize);
+            bg.setFill(Color.BLACK);
+            bg.setStroke(Color.BLACK);
+            bg.setStrokeWidth(tileSize * 0.03);
+            bg.setTranslateX((tileSize - tileSize * wSize * 2) / 2);
+            bg.setTranslateY((tileSize - tileSize * hSize * 2) / 2 + tileSize * shadow);
+
+            Ellipse ellipse = new Ellipse(tileSize * wSize, tileSize * hSize);
+            ellipse.setFill(getColorFromType());
+            ellipse.setStroke(Color.BLACK);
+            ellipse.setStrokeWidth(tileSize * 0.03);
+            ellipse.setTranslateX((tileSize - tileSize * wSize * 2) / 2);
+            ellipse.setTranslateY((tileSize - tileSize * hSize * 2) / 2);
+
+            getChildren().addAll(bg, ellipse);
+        } else {
+            Text text = new Text();
+            text.setText("x");
+            text.setFont(Font.font("", FontWeight.NORMAL, FontPosture.REGULAR, 30));
+            text.setTranslateX(23);
+            text.setTranslateY(4);
+            getChildren().addAll(text);
         }
     }
 }

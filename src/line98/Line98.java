@@ -5,17 +5,11 @@
  */
 package line98;
 
-import javafx.scene.shape.Rectangle;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 /**
@@ -24,9 +18,9 @@ import javafx.stage.Stage;
  */
 public class Line98 extends Application {
 
-    public static final int TILE_SIZE = 40;
-    public static final int W = 360;
-    public static final int H = 360;
+    public static final int TILE_SIZE = 60;
+    public static final int W = 540;
+    public static final int H = 540;
     
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
@@ -42,15 +36,15 @@ public class Line98 extends Application {
                 tileGroup.getChildren().add(tile);
                 
                 Piece piece = null;
-                piece = makePiece(x, y);
+                piece = makePiece(Piece.PieceType.FULL ,Piece.ColorType.BLUE, x, y);
                 pieceGroup.getChildren().add(piece);
             }
         }
         return root;
     }
     
-    private Piece makePiece(int x, int y) {
-        Piece piece = new Piece(x, y);
+    private Piece makePiece(Piece.PieceType pType ,Piece.ColorType cType, int x, int y) {
+        Piece piece = new Piece(pType, cType, x, y);
         return piece;
     }
     

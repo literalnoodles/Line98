@@ -17,7 +17,7 @@ public class Tile extends Rectangle{
         setWidth(Line98.TILE_SIZE);
         setHeight(Line98.TILE_SIZE);
         relocate(x * Line98.TILE_SIZE, y * Line98.TILE_SIZE);
-        setFill(Color.LIGHTGRAY);
+        setFill(Color.WHITESMOKE);
         setStroke(Color.BLACK);
     }
 }
