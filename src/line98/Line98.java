@@ -5,6 +5,9 @@
  */
 package line98;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -27,55 +30,80 @@ public class Line98 extends Application {
     
     private Piece activePiece;
     
-    private void setActivePiece(double posX, double posY)
+    private void movePiece(Piece piece, int newX, int newY) {
+        pieceArray[piece.x][piece.y] = null;
+        grid[piece.x][piece.y].setUnactive();
+//        System.out.printf("Set (%s, %s) to null\n", piece.x, piece.y);
+        piece.move(newX, newY);
+        pieceArray[newX][newY] = piece;
+        activePiece = null;
+//        grid[newX][newY].setActive();
+    }
+    
+    private void handleMouseClick(double posX, double posY)
     {
         int x = (int) posX / (TILE_SIZE);
         int y = (int) posY / (TILE_SIZE);
 //        System.out.println(x);
 //        System.out.println(y);
-//        System.out.println(grid[x][y]);
-        if (grid[x][y] == null) {
-            if (activePiece != null) {
-                grid[activePiece.x][activePiece.y] = null; // set old tile to null
-                activePiece.move(x, y);
-                grid[x][y] = activePiece; // set to new tile
+        
+        if (activePiece == null) {
+            if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL) {
+                activePiece = pieceArray[x][y];
+                grid[x][y].setActive();
             }
+            return;
         }
+        
+        if (x == activePiece.x && y == activePiece.y) {
+            activePiece = null;
+            grid[x][y].setUnactive();
+            return;
+        }
+        
+        // try to move to new position
+        movePiece(activePiece, x, y);
     }
     
     private Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(W, H);
         root.getChildren().addAll(tileGroup, pieceGroup);
-        for (int y = 0; y < Y_TILES; y++) {
-            for (int x = 0; x < X_TILES; x++) {
+        int[] randomNum = new Random().ints(0, 81).distinct().limit(6).toArray();
+        for (int i = 0; i < randomNum.length; i++) {
+            int y =(int) randomNum[i] / 9;
+            int x = randomNum[i] % 9;
+            if (i < 3) {
+                // generate seed
+                makePiece(Piece.PieceType.SEED, x, y);
+            } else {
+                // generate full
+                makePiece(Piece.PieceType.FULL, x, y);
+            }
+        }
+        
+        for (int x = 0; x < X_TILES; x++) {
+            for (int y = 0; y < Y_TILES; y++) {
                 Tile tile = new Tile(x, y);
-//                grid[x][y] = tile;
+                grid[x][y] = tile;
                 tileGroup.getChildren().add(tile);
-                if (x == 1 && y == 3) {
-                    Piece piece = null;
-                    piece = makePiece(Piece.PieceType.FULL ,Piece.ColorType.BLUE, x, y);
-                    pieceGroup.getChildren().add(piece);
-                    piece.move(2, 2);
-                    activePiece = piece;
-//                    piece.move(3, 5);
-//                    grid[2][1] = piece;
-//                    activePiece = piece;
-                }
             }
         }
         return root;
     }
     
-    private Piece makePiece(Piece.PieceType pType ,Piece.ColorType cType, int x, int y) {
-        Piece piece = new Piece(pType, cType, x, y);
+    private Piece makePiece(Piece.PieceType pType, int x, int y) {
+        Piece piece = new Piece(pType, x, y);
+        pieceArray[x][y] = piece;
+        pieceGroup.getChildren().add(piece);
         return piece;
     }
     
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
     
-    private Piece[][] grid = new Piece[X_TILES][Y_TILES];
+    private Piece[][] pieceArray = new Piece[X_TILES][Y_TILES];
+    private Tile[][] grid = new Tile[X_TILES][Y_TILES];
 
     @Override
     public void start(Stage primaryStage) {
@@ -84,8 +112,7 @@ public class Line98 extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         scene.setOnMouseClicked((event) -> {
-//            activePiece.move(3, 4);
-            setActivePiece(event.getX(), event.getY());
+            handleMouseClick(event.getX(), event.getY());
         });
     }
 

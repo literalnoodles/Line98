@@ -6,6 +6,7 @@
 package line98;
 
 
+import java.util.Random;
 import javafx.animation.PathTransition;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -85,7 +86,8 @@ public class Piece extends StackPane{
         return this.pType;
     } 
     
-    public Piece(PieceType pType, ColorType cType, int x, int y) {
+    public Piece(PieceType pType, int x, int y) {
+        cType = ColorType.values()[new Random().nextInt(ColorType.values().length)];
         int tileSize = Line98.TILE_SIZE;
         this.cType = cType;
         this.pType = pType;
@@ -170,7 +172,7 @@ public class Piece extends StackPane{
         PathTransition transition = new PathTransition();
         transition.setPath(path);
         transition.setNode(this);
-        transition.setDuration(Duration.seconds(1));
+        transition.setDuration(Duration.seconds(0.5));
         transition.play();
 //        oldX = -offsetPosX + tileSize/2 - originX + newX * tileSize;
 //        oldY = -offsetPosY + tileSize/2 - originY + newY * tileSize;

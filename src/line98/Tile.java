@@ -20,4 +20,12 @@ public class Tile extends Rectangle{
         setFill(Color.WHITESMOKE);
         setStroke(Color.BLACK);
     }
+    
+    public void setActive() {
+        setFill(Color.ANTIQUEWHITE);
+    }
+    
+    public void setUnactive() {
+        setFill(Color.WHITESMOKE);
+    }
 }
