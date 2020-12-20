@@ -24,7 +24,25 @@ public class Line98 extends Application {
     
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
-
+    
+    private Piece activePiece;
+    
+    private void setActivePiece(double posX, double posY)
+    {
+        int x = (int) posX / (TILE_SIZE);
+        int y = (int) posY / (TILE_SIZE);
+//        System.out.println(x);
+//        System.out.println(y);
+//        System.out.println(grid[x][y]);
+        if (grid[x][y] == null) {
+            if (activePiece != null) {
+                grid[activePiece.x][activePiece.y] = null; // set old tile to null
+                activePiece.move(x, y);
+                grid[x][y] = activePiece; // set to new tile
+            }
+        }
+    }
+    
     private Parent createContent() {
         Pane root = new Pane();
         root.setPrefSize(W, H);
@@ -34,10 +52,16 @@ public class Line98 extends Application {
                 Tile tile = new Tile(x, y);
 //                grid[x][y] = tile;
                 tileGroup.getChildren().add(tile);
-                
-                Piece piece = null;
-                piece = makePiece(Piece.PieceType.FULL ,Piece.ColorType.BLUE, x, y);
-                pieceGroup.getChildren().add(piece);
+                if (x == 1 && y == 3) {
+                    Piece piece = null;
+                    piece = makePiece(Piece.PieceType.FULL ,Piece.ColorType.BLUE, x, y);
+                    pieceGroup.getChildren().add(piece);
+                    piece.move(2, 2);
+                    activePiece = piece;
+//                    piece.move(3, 5);
+//                    grid[2][1] = piece;
+//                    activePiece = piece;
+                }
             }
         }
         return root;
@@ -51,7 +75,7 @@ public class Line98 extends Application {
     private Group tileGroup = new Group();
     private Group pieceGroup = new Group();
     
-    private Tile[][] grid = new Tile[X_TILES][Y_TILES];
+    private Piece[][] grid = new Piece[X_TILES][Y_TILES];
 
     @Override
     public void start(Stage primaryStage) {
@@ -59,6 +83,10 @@ public class Line98 extends Application {
         primaryStage.setTitle("Line 98");
         primaryStage.setScene(scene);
         primaryStage.show();
+        scene.setOnMouseClicked((event) -> {
+//            activePiece.move(3, 4);
+            setActivePiece(event.getX(), event.getY());
+        });
     }
 
     /**
