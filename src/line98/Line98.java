@@ -5,8 +5,11 @@
  */
 package line98;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 import javafx.application.Application;
@@ -21,7 +24,7 @@ import javafx.stage.Stage;
  * @author prdox
  */
 public class Line98 extends Application {
-
+    
     public static final int TILE_SIZE = 60;
     public static final int W = 540;
     public static final int H = 540;
@@ -30,6 +33,8 @@ public class Line98 extends Application {
     public static final int Y_TILES = H / TILE_SIZE;
     
     public static Piece activePiece;
+    
+    private final static int[][] moveDir = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
     
     private void movePiece(Piece piece, int newX, int newY) {
         pieceArray[piece.x][piece.y] = null;
@@ -41,6 +46,74 @@ public class Line98 extends Application {
         piece.toFront();
 //        System.out.printf("Set (%s, %s) to null\n", piece.x, piece.y);
         piece.move(newX, newY);
+        System.out.println(findingPath(0, 0, 0, 1));
+    }
+    
+    private List<Integer> findingPath(int x, int y, int newX, int newY) {
+        boolean[][] visited = new boolean[9][9];
+        for (int i = 0; i < visited.length; i++) {
+            for (int j = 0; j < visited[i].length; j++) {
+                visited[i][j] = false;
+            }
+        }
+        
+        int[][] backTrack = new int[9][9];
+        for (int i = 0; i < backTrack.length; i++) {
+            for (int j = 0; j < backTrack[i].length; j++) {
+                backTrack[i][j] = -1;
+            }
+        }
+        
+        visited[x][y] = true;
+        
+        Queue<int[]> queueNode = new LinkedList<>();
+        int[] node = {x, y};
+        queueNode.add(node);
+        boolean found = false;
+        while (!queueNode.isEmpty() && !found) {
+            int[] head = queueNode.remove();
+            int index = 0;
+            for (int[] dir: moveDir) {
+                int cx = head[0] + dir[0];
+                int cy = head[1] + dir[1];
+                if (isValidCoordinate(cx, cy) && !visited[cx][cy]) {
+                    int[] cNode = {cx, cy};
+                    queueNode.add(cNode);
+                    visited[cx][cy] = true;
+                    backTrack[cx][cy] = index;
+                }
+                
+                if (cx == newX && cy == newY) {
+                    found = true;
+                }
+                
+                index++;
+            }
+        }
+        
+        List<Integer> path = new ArrayList<>();
+        
+        if (found) {
+            // reconstruct the path
+            int cx = newX;
+            int cy = newY;
+            while (cx != x || cy != y) {
+                int index = backTrack[cx][cy];
+                cx -= moveDir[index][0];
+                cy -= moveDir[index][1];
+                path.add(0, backTrack[cx][cy]);
+            }
+        }
+        
+        return path;
+    }
+    
+    private boolean isValidCoordinate(int x, int y) {
+        if (x < 0 || y < 0 || x > 8 || y > 8)
+            return false;
+        if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL)
+            return false;
+        return true;
     }
     
     public static void OnFinishMove(Piece piece, int newX, int newY) {
