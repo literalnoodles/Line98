@@ -172,7 +172,12 @@ public class Piece extends StackPane{
         PathTransition transition = new PathTransition();
         transition.setPath(path);
         transition.setNode(this);
-        transition.setDuration(Duration.seconds(0.5));
+        transition.setDuration(Duration.seconds(2));
+        
+        transition.setOnFinished(event -> {
+            Line98.OnFinishMove(this, newX, newY);
+        });
+        
         transition.play();
 //        oldX = -offsetPosX + tileSize/2 - originX + newX * tileSize;
 //        oldY = -offsetPosY + tileSize/2 - originY + newY * tileSize;

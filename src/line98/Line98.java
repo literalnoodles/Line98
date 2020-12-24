@@ -8,6 +8,7 @@ package line98;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import javafx.application.Application;
 import javafx.scene.Group;
 import javafx.scene.Parent;
@@ -28,16 +29,30 @@ public class Line98 extends Application {
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
     
-    private Piece activePiece;
+    public static Piece activePiece;
     
     private void movePiece(Piece piece, int newX, int newY) {
         pieceArray[piece.x][piece.y] = null;
         grid[piece.x][piece.y].setUnactive();
+        
+        if (pieceArray[newX][newY] != null) {
+            pieceArray[newX][newY].toBack();
+        }
+        piece.toFront();
 //        System.out.printf("Set (%s, %s) to null\n", piece.x, piece.y);
         piece.move(newX, newY);
-        pieceArray[newX][newY] = piece;
-        activePiece = null;
-//        grid[newX][newY].setActive();
+    }
+    
+    public static void OnFinishMove(Piece piece, int newX, int newY) {
+        Piece oldPiece = pieceArray[newX][newY];
+        pieceArray[newX][newY] = piece; // set piece for the new position
+        activePiece = null; // reset activePiece
+        // if move to seed -> remove the seed
+        if (oldPiece != null && oldPiece.pType == Piece.PieceType.SEED) {
+            pieceGroup.getChildren().remove(oldPiece);
+        }
+        
+        generateSeed();
     }
     
     private void handleMouseClick(double posX, double posY)
@@ -55,14 +70,54 @@ public class Line98 extends Application {
             return;
         }
         
+        // case select again
         if (x == activePiece.x && y == activePiece.y) {
             activePiece = null;
             grid[x][y].setUnactive();
             return;
         }
         
+        // case select another full piece
+        if (pieceArray[x][y] != null &&
+                pieceArray[x][y].pType == Piece.PieceType.FULL) {
+            grid[activePiece.x][activePiece.y].setUnactive();
+            activePiece = null;
+            return;
+        }
+        
         // try to move to new position
         movePiece(activePiece, x, y);
+    }
+    
+    public static boolean generateSeed() {
+        int countEmpty = 0;
+        
+        for (int x = 0; x < X_TILES; x++) {
+            for (int y = 0; y < Y_TILES; y++) {
+                countEmpty += (pieceArray[x][y] == null ? 1 : 0);
+            }
+        }
+        
+        if (countEmpty < 3) return false;
+        int[] randomNum = new Random().ints(0, countEmpty).distinct().limit(3).toArray();
+        List<Integer> randomNumList = Arrays.stream(randomNum).boxed().collect(Collectors.toList());
+        
+        int curTile = 0;
+        for (int i = 0; i < 81; i++) {
+            int y = (int) i / 9;
+            int x = (int) i % 9;
+            if (pieceArray[x][y] != null) {
+                continue;
+            }
+            
+            if (randomNumList.contains(curTile)) {
+                makePiece(Piece.PieceType.SEED, x, y);
+            }
+            
+            curTile++;
+        }
+        
+        return true;
     }
     
     private Parent createContent() {
@@ -92,18 +147,18 @@ public class Line98 extends Application {
         return root;
     }
     
-    private Piece makePiece(Piece.PieceType pType, int x, int y) {
+    private static Piece makePiece(Piece.PieceType pType, int x, int y) {
         Piece piece = new Piece(pType, x, y);
         pieceArray[x][y] = piece;
         pieceGroup.getChildren().add(piece);
         return piece;
     }
     
-    private Group tileGroup = new Group();
-    private Group pieceGroup = new Group();
+    public static Group tileGroup = new Group();
+    public static Group pieceGroup = new Group();
     
-    private Piece[][] pieceArray = new Piece[X_TILES][Y_TILES];
-    private Tile[][] grid = new Tile[X_TILES][Y_TILES];
+    public static Piece[][] pieceArray = new Piece[X_TILES][Y_TILES];
+    public static Tile[][] grid = new Tile[X_TILES][Y_TILES];
 
     @Override
     public void start(Stage primaryStage) {
