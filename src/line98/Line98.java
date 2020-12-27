@@ -32,11 +32,19 @@ public class Line98 extends Application {
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
     
+    public static final int clearSize = 5;
+    
     public static Piece activePiece;
     
     protected final static int[][] moveDir = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+    protected final static int[][] clearDir = {{0, 1}, {1, 0}, {1, -1}, {1, 1}};
+    
+    private static int totalScore = 0;
     
     private void movePiece(Piece piece, int newX, int newY) {
+        List<Integer> path = findingPath(piece.x, piece.y, newX, newY);
+        if (path.size() == 0) return;
+        
         pieceArray[piece.x][piece.y] = null;
         grid[piece.x][piece.y].setUnactive();
         
@@ -44,7 +52,7 @@ public class Line98 extends Application {
             pieceArray[newX][newY].toBack();
         }
         piece.toFront();
-        piece.movePath(findingPath(piece.x, piece.y, newX, newY));
+        piece.movePath(path);
     }
     
     private List<Integer> findingPath(int x, int y, int newX, int newY) {
@@ -114,7 +122,16 @@ public class Line98 extends Application {
         return true;
     }
     
-    public static void OnFinishMove(Piece piece, int newX, int newY, boolean generateNew) {
+    private static boolean hasPiece(int x, int y) {
+        if (x < 0 || y < 0 || x > 8 || y > 8)
+            return false;
+        if (pieceArray[x][y] == null)
+            return false;
+        return true;
+    }
+    
+    public static void OnFinishMove(Piece piece, int newX, int newY) {
+        
         Piece oldPiece = pieceArray[newX][newY];
         pieceArray[newX][newY] = piece; // set piece for the new position
         activePiece = null; // reset activePiece
@@ -123,18 +140,18 @@ public class Line98 extends Application {
             pieceGroup.getChildren().remove(oldPiece);
         }
         
-        if (generateNew) {
+        if (!clearOnPiece(piece)) {
             growAllPiece();
             generateSeed();
+            clearOnPiece(piece);
         }
+        System.out.println(totalScore);
     }
     
     private void handleMouseClick(double posX, double posY)
     {
         int x = (int) posX / (TILE_SIZE);
         int y = (int) posY / (TILE_SIZE);
-//        System.out.println(x);
-//        System.out.println(y);
         
         if (activePiece == null) {
             if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL) {
@@ -258,6 +275,69 @@ public class Line98 extends Application {
         pieceGroup.getChildren().remove(oldPiece);
         pieceArray[x][y] = null;
         
+    }
+    
+    private static List<int[]> getSameType(Piece piece, int dirX, int dirY) {
+        int mvIndex = 1;
+        int x = piece.x;
+        int y = piece.y;
+        Piece.ColorType color = piece.cType;
+        List<int[]> list = new ArrayList<>();
+        
+        while (true) {
+            int cx = x + mvIndex * dirX;
+            int cy = y + mvIndex * dirY;
+            if (!hasPiece(cx, cy)) {
+                break;
+            }
+
+            Piece cPiece = pieceArray[cx][cy];
+            if (cPiece.pType !=  Piece.PieceType.FULL || cPiece.cType != color) {
+                break;
+            }
+
+            mvIndex++;
+            int[] p = {cx, cy};
+            list.add(p);
+        }
+        
+        return list;
+    }
+    
+    private static boolean clearOnPiece(Piece piece) {
+        int x = piece.x;
+        int y = piece.y;
+        Piece.ColorType color = piece.cType;
+        List<int[]> clearPieces = new ArrayList<>();
+        int[] p = {piece.x, piece.y};
+        clearPieces.add(p);
+        for (int[] dir : clearDir) {
+            // check for first direction
+            List<int[]> addList = new ArrayList<>();
+            int dirX = dir[0];
+            int dirY = dir[1];
+            addList.addAll(getSameType(piece, dirX, dirY));
+            
+            // check for other direction
+            addList.addAll(getSameType(piece, -dirX, -dirY));
+            
+            if (addList.size() >= (clearSize - 1)) {
+                clearPieces.addAll(addList);
+                // add to clearPieces
+            }
+        }
+        
+        if (clearPieces.size() > 1) {
+            for (int[] coordinate : clearPieces) {
+                int cx = coordinate[0];
+                int cy = coordinate[1];
+                deletePiece(pieceArray[cx][cy]);
+            }
+            totalScore += clearPieces.size() * 10;
+            return true;
+        }
+        
+        return false;
     }
     
     public static Group tileGroup = new Group();

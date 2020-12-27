@@ -217,12 +217,12 @@ public class Piece extends StackPane{
         transition.setNode(this);
         transition.setDuration(Duration.seconds(path.size() * 0.05));
         
-        transition.setOnFinished(event -> {
-            Line98.OnFinishMove(this, cx.get(), cy.get(), path.size() != 0);
-        });
-        
         transition.play();
         x = cx.get();
         y = cy.get();
+        
+        transition.setOnFinished(event -> {
+            Line98.OnFinishMove(this, cx.get(), cy.get());
+        });
     }
 }
