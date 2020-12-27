@@ -34,7 +34,7 @@ public class Line98 extends Application {
     
     public static Piece activePiece;
     
-    private final static int[][] moveDir = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+    protected final static int[][] moveDir = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
     
     private void movePiece(Piece piece, int newX, int newY) {
         pieceArray[piece.x][piece.y] = null;
@@ -44,9 +44,7 @@ public class Line98 extends Application {
             pieceArray[newX][newY].toBack();
         }
         piece.toFront();
-//        System.out.printf("Set (%s, %s) to null\n", piece.x, piece.y);
-        piece.move(newX, newY);
-        System.out.println(findingPath(0, 0, 0, 1));
+        piece.movePath(findingPath(piece.x, piece.y, newX, newY));
     }
     
     private List<Integer> findingPath(int x, int y, int newX, int newY) {
@@ -98,10 +96,10 @@ public class Line98 extends Application {
             int cx = newX;
             int cy = newY;
             while (cx != x || cy != y) {
+                path.add(0, backTrack[cx][cy]);
                 int index = backTrack[cx][cy];
                 cx -= moveDir[index][0];
                 cy -= moveDir[index][1];
-                path.add(0, backTrack[cx][cy]);
             }
         }
         
@@ -137,12 +135,12 @@ public class Line98 extends Application {
         
         if (activePiece == null) {
             if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL) {
-                activePiece = pieceArray[x][y];
+        activePiece = pieceArray[x][y];
                 grid[x][y].setActive();
             }
-            return;
-        }
-        
+        return;
+    }
+    
         // case select again
         if (x == activePiece.x && y == activePiece.y) {
             activePiece = null;

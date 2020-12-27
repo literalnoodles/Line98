@@ -6,7 +6,9 @@
 package line98;
 
 
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import javafx.animation.PathTransition;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -172,7 +174,7 @@ public class Piece extends StackPane{
         PathTransition transition = new PathTransition();
         transition.setPath(path);
         transition.setNode(this);
-        transition.setDuration(Duration.seconds(2));
+        transition.setDuration(Duration.seconds(1));
         
         transition.setOnFinished(event -> {
             Line98.OnFinishMove(this, newX, newY);
@@ -183,5 +185,41 @@ public class Piece extends StackPane{
 //        oldY = -offsetPosY + tileSize/2 - originY + newY * tileSize;
         x = newX;
         y = newY;
+    }
+    
+    public void movePath(List<Integer> path) {
+        int tileSize = Line98.TILE_SIZE;
+        int[][] moveDir = Line98.moveDir;
+        oldPosX = -offsetPosX + tileSize/2 - originPosX + x * tileSize;
+        oldPosY = -offsetPosY + tileSize/2 - originPosY + y * tileSize;
+        Path dPath = new Path();
+        dPath.getElements().add(new MoveTo(oldPosX, oldPosY));
+        
+        final AtomicReference<Integer> cx = new AtomicReference<>();
+        final AtomicReference<Integer> cy = new AtomicReference<>();
+        cx.set(x);
+        cy.set(y);
+        double posX = oldPosX ;
+        double posY = oldPosY ;
+        for (Integer dir : path) {
+            cx.set(cx.get() + moveDir[dir][0]);
+            cy.set(cy.get() + moveDir[dir][1]);
+            posX += moveDir[dir][0] * tileSize;
+            posY += moveDir[dir][1] * tileSize;
+            dPath.getElements().add(new LineTo(posX, posY));
+        }
+
+        PathTransition transition = new PathTransition();
+        transition.setPath(dPath);
+        transition.setNode(this);
+        transition.setDuration(Duration.seconds(1));
+        
+        transition.setOnFinished(event -> {
+            Line98.OnFinishMove(this, cx.get(), cy.get());
+        });
+        
+        transition.play();
+        x = cx.get();
+        y = cy.get();
     }
 }
