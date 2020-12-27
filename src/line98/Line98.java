@@ -114,7 +114,7 @@ public class Line98 extends Application {
         return true;
     }
     
-    public static void OnFinishMove(Piece piece, int newX, int newY) {
+    public static void OnFinishMove(Piece piece, int newX, int newY, boolean generateNew) {
         Piece oldPiece = pieceArray[newX][newY];
         pieceArray[newX][newY] = piece; // set piece for the new position
         activePiece = null; // reset activePiece
@@ -123,7 +123,10 @@ public class Line98 extends Application {
             pieceGroup.getChildren().remove(oldPiece);
         }
         
-        generateSeed();
+        if (generateNew) {
+            growAllPiece();
+            generateSeed();
+        }
     }
     
     private void handleMouseClick(double posX, double posY)
@@ -135,16 +138,16 @@ public class Line98 extends Application {
         
         if (activePiece == null) {
             if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL) {
-        activePiece = pieceArray[x][y];
+                activePiece = pieceArray[x][y];
                 grid[x][y].setActive();
             }
-        return;
-    }
+            return;
+        }
     
         // case select again
         if (x == activePiece.x && y == activePiece.y) {
-            activePiece = null;
-            grid[x][y].setUnactive();
+//            activePiece = null;
+//            grid[x][y].setUnactive();
             return;
         }
         
@@ -152,7 +155,9 @@ public class Line98 extends Application {
         if (pieceArray[x][y] != null &&
                 pieceArray[x][y].pType == Piece.PieceType.FULL) {
             grid[activePiece.x][activePiece.y].setUnactive();
-            activePiece = null;
+//            activePiece = null;
+            grid[x][y].setActive();
+            activePiece = pieceArray[x][y];
             return;
         }
         
@@ -182,7 +187,7 @@ public class Line98 extends Application {
             }
             
             if (randomNumList.contains(curTile)) {
-                makePiece(Piece.PieceType.SEED, x, y);
+                makePiece(Piece.PieceType.SEED, null, x, y);
             }
             
             curTile++;
@@ -201,10 +206,10 @@ public class Line98 extends Application {
             int x = randomNum[i] % 9;
             if (i < 3) {
                 // generate seed
-                makePiece(Piece.PieceType.SEED, x, y);
+                makePiece(Piece.PieceType.SEED, null, x, y);
             } else {
                 // generate full
-                makePiece(Piece.PieceType.FULL, x, y);
+                makePiece(Piece.PieceType.FULL, null, x, y);
             }
         }
         
@@ -218,11 +223,41 @@ public class Line98 extends Application {
         return root;
     }
     
-    private static Piece makePiece(Piece.PieceType pType, int x, int y) {
-        Piece piece = new Piece(pType, x, y);
+    private static Piece makePiece(Piece.PieceType pType, Piece.ColorType cType, int x, int y) {
+        Piece piece = new Piece(pType, cType, x, y);
         pieceArray[x][y] = piece;
         pieceGroup.getChildren().add(piece);
         return piece;
+    }
+    
+    private static void growPiece(Piece piece) {
+        // check if the piece is not a seed -> return
+        if (piece.pType != Piece.PieceType.SEED) return;
+        Piece.ColorType oldColor = pieceArray[piece.x][piece.y].cType;
+        // remove the seed
+        deletePiece(piece);
+        // generate Piece
+        makePiece(Piece.PieceType.FULL, oldColor, piece.x, piece.y);
+    }
+    
+    private static void growAllPiece() {
+        for (int x = 0; x < X_TILES; x++) {
+            for (int y = 0; y < Y_TILES; y++) {
+                Piece piece = pieceArray[x][y];
+                if (piece != null && piece.pType == Piece.PieceType.SEED) {
+                    growPiece(piece);
+                }
+            }
+        }
+    }
+    
+    private static void deletePiece(Piece piece) {
+        int x = piece.x;
+        int y = piece.y;
+        Piece oldPiece = pieceArray[x][y];
+        pieceGroup.getChildren().remove(oldPiece);
+        pieceArray[x][y] = null;
+        
     }
     
     public static Group tileGroup = new Group();

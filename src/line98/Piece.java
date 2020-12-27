@@ -88,8 +88,11 @@ public class Piece extends StackPane{
         return this.pType;
     } 
     
-    public Piece(PieceType pType, int x, int y) {
-        cType = ColorType.values()[new Random().nextInt(ColorType.values().length)];
+    public Piece(PieceType pType, ColorType cType, int x, int y) {
+        if (cType == null) {
+            cType = ColorType.values()[new Random().nextInt(ColorType.values().length)];
+        }
+        
         int tileSize = Line98.TILE_SIZE;
         this.cType = cType;
         this.pType = pType;
@@ -163,29 +166,29 @@ public class Piece extends StackPane{
         }
     }
     
-    public void move(int newX, int newY) {
-        int tileSize = Line98.TILE_SIZE;
-        oldPosX = -offsetPosX + tileSize/2 - originPosX + x * tileSize;
-        oldPosY = -offsetPosY + tileSize/2 - originPosY + y * tileSize;
-        Path path = new Path();
-        path.getElements().add(new MoveTo(oldPosX, oldPosY));
-        path.getElements().add(new LineTo(oldPosX + (newX - x)*tileSize, oldPosY + (newY - y)*tileSize));
-
-        PathTransition transition = new PathTransition();
-        transition.setPath(path);
-        transition.setNode(this);
-        transition.setDuration(Duration.seconds(1));
-        
-        transition.setOnFinished(event -> {
-            Line98.OnFinishMove(this, newX, newY);
-        });
-        
-        transition.play();
-//        oldX = -offsetPosX + tileSize/2 - originX + newX * tileSize;
-//        oldY = -offsetPosY + tileSize/2 - originY + newY * tileSize;
-        x = newX;
-        y = newY;
-    }
+//    public void move(int newX, int newY) {
+//        int tileSize = Line98.TILE_SIZE;
+//        oldPosX = -offsetPosX + tileSize/2 - originPosX + x * tileSize;
+//        oldPosY = -offsetPosY + tileSize/2 - originPosY + y * tileSize;
+//        Path path = new Path();
+//        path.getElements().add(new MoveTo(oldPosX, oldPosY));
+//        path.getElements().add(new LineTo(oldPosX + (newX - x)*tileSize, oldPosY + (newY - y)*tileSize));
+//
+//        PathTransition transition = new PathTransition();
+//        transition.setPath(path);
+//        transition.setNode(this);
+//        transition.setDuration(Duration.seconds(1));
+//        
+//        transition.setOnFinished(event -> {
+//            Line98.OnFinishMove(this, newX, newY);
+//        });
+//        
+//        transition.play();
+////        oldX = -offsetPosX + tileSize/2 - originX + newX * tileSize;
+////        oldY = -offsetPosY + tileSize/2 - originY + newY * tileSize;
+//        x = newX;
+//        y = newY;
+//    }
     
     public void movePath(List<Integer> path) {
         int tileSize = Line98.TILE_SIZE;
@@ -212,10 +215,10 @@ public class Piece extends StackPane{
         PathTransition transition = new PathTransition();
         transition.setPath(dPath);
         transition.setNode(this);
-        transition.setDuration(Duration.seconds(1));
+        transition.setDuration(Duration.seconds(path.size() * 0.05));
         
         transition.setOnFinished(event -> {
-            Line98.OnFinishMove(this, cx.get(), cy.get());
+            Line98.OnFinishMove(this, cx.get(), cy.get(), path.size() != 0);
         });
         
         transition.play();
