@@ -29,6 +29,8 @@ public class Line98 extends Application {
     public static final int W = 540;
     public static final int H = 540;
     
+    public static final int SCORE_W = 200;
+    
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
     
@@ -39,7 +41,7 @@ public class Line98 extends Application {
     protected final static int[][] moveDir = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
     protected final static int[][] clearDir = {{0, 1}, {1, 0}, {1, -1}, {1, 1}};
     
-    private static int totalScore = 0;
+    protected static int totalScore = 0;
     
     private void movePiece(Piece piece, int newX, int newY) {
         List<Integer> path = findingPath(piece.x, piece.y, newX, newY);
@@ -145,13 +147,15 @@ public class Line98 extends Application {
             generateSeed();
             clearOnPiece(piece);
         }
-        System.out.println(totalScore);
+        scoreboard.updateScore();
     }
     
     private void handleMouseClick(double posX, double posY)
     {
         int x = (int) posX / (TILE_SIZE);
         int y = (int) posY / (TILE_SIZE);
+        
+        if (x >= X_TILES || y >= Y_TILES) return;
         
         if (activePiece == null) {
             if (pieceArray[x][y] != null && pieceArray[x][y].pType == Piece.PieceType.FULL) {
@@ -215,8 +219,10 @@ public class Line98 extends Application {
     
     private Parent createContent() {
         Pane root = new Pane();
-        root.setPrefSize(W, H);
-        root.getChildren().addAll(tileGroup, pieceGroup);
+        root.setPrefSize(W + SCORE_W, H);
+        root.getChildren().addAll(tileGroup, pieceGroup, scoreGroup);
+        scoreboard = new ScoreBoard();
+        scoreGroup.getChildren().add(scoreboard);
         int[] randomNum = new Random().ints(0, 81).distinct().limit(6).toArray();
         for (int i = 0; i < randomNum.length; i++) {
             int y =(int) randomNum[i] / 9;
@@ -342,9 +348,11 @@ public class Line98 extends Application {
     
     public static Group tileGroup = new Group();
     public static Group pieceGroup = new Group();
+    public static Group scoreGroup = new Group();
     
     public static Piece[][] pieceArray = new Piece[X_TILES][Y_TILES];
     public static Tile[][] grid = new Tile[X_TILES][Y_TILES];
+    public static ScoreBoard scoreboard;
 
     @Override
     public void start(Stage primaryStage) {
