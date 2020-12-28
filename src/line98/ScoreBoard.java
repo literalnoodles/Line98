@@ -5,6 +5,7 @@
  */
 package line98;
 
+import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -20,6 +21,7 @@ import javafx.scene.text.Text;
 public class ScoreBoard extends StackPane{
     
     private Text score;
+    protected Button newgameBtn;
     
     public ScoreBoard() {
         Rectangle board = new Rectangle();
@@ -49,7 +51,9 @@ public class ScoreBoard extends StackPane{
         highScore.setFont(Font.font("", FontWeight.BOLD, FontPosture.REGULAR, 30));
         highScore.setTranslateY(-(Line98.TILE_SIZE * Line98.Y_TILES / 2 - 190));
         
-        getChildren().addAll(board, text, score, text2, highScore);
+        newgameBtn = new Button("New game"); 
+        
+        getChildren().addAll(board, text, score, text2, highScore, newgameBtn);
     }
     
     public void updateScore() {

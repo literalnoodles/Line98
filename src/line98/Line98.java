@@ -221,7 +221,6 @@ public class Line98 extends Application {
         Pane root = new Pane();
         root.setPrefSize(W + SCORE_W, H);
         root.getChildren().addAll(tileGroup, pieceGroup, scoreGroup);
-        scoreboard = new ScoreBoard();
         scoreGroup.getChildren().add(scoreboard);
         int[] randomNum = new Random().ints(0, 81).distinct().limit(6).toArray();
         for (int i = 0; i < randomNum.length; i++) {
@@ -346,23 +345,41 @@ public class Line98 extends Application {
         return false;
     }
     
-    public static Group tileGroup = new Group();
-    public static Group pieceGroup = new Group();
-    public static Group scoreGroup = new Group();
+    public static Group tileGroup;
+    public static Group pieceGroup;
+    public static Group scoreGroup;
     
-    public static Piece[][] pieceArray = new Piece[X_TILES][Y_TILES];
-    public static Tile[][] grid = new Tile[X_TILES][Y_TILES];
+    public static Piece[][] pieceArray;
+    public static Tile[][] grid;
     public static ScoreBoard scoreboard;
 
     @Override
     public void start(Stage primaryStage) {
+        newGame(primaryStage);
+    }
+    
+    public void newGame(Stage stage) {
+        init();
         Scene scene = new Scene(createContent());
-        primaryStage.setTitle("Line 98");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        scoreboard.newgameBtn.setOnAction(e -> {
+            newGame(stage);
+        });
+        stage.setTitle("Line 98");
+        stage.setScene(scene);
+        stage.show();
         scene.setOnMouseClicked((event) -> {
             handleMouseClick(event.getX(), event.getY());
         });
+    }
+    
+    public void init() {
+        tileGroup = new Group();
+        pieceGroup = new Group();
+        scoreGroup = new Group();
+        scoreboard = new ScoreBoard();
+        pieceArray = new Piece[X_TILES][Y_TILES];
+        grid = new Tile[X_TILES][Y_TILES];
+        totalScore = 0;
     }
 
     /**
