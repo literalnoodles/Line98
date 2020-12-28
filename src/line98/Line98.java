@@ -13,9 +13,14 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -145,7 +150,10 @@ public class Line98 extends Application {
         if (!clearOnPiece(piece)) {
             List<int[]> growList = growAllPieces();
             clearOnMultiPiece(growList);
-            generateSeed();
+            if (!generateSeed()) {
+                resultDialog.setContentText("Your score is " + totalScore + "\nClick OK to start a new game");
+                resultDialog.show();
+            };
         }
         scoreboard.updateScore();
     }
@@ -388,6 +396,7 @@ public class Line98 extends Application {
     public static Piece[][] pieceArray;
     public static Tile[][] grid;
     public static ScoreBoard scoreboard;
+    public static Dialog<String> resultDialog;
 
     @Override
     public void start(Stage primaryStage) {
@@ -400,6 +409,17 @@ public class Line98 extends Application {
         scoreboard.newgameBtn.setOnAction(e -> {
             newGame(stage);
         });
+        
+        // dialog showing game result
+        resultDialog = new Dialog<String>();
+        resultDialog.setTitle("Game over");
+        ButtonType type = new ButtonType("OK", ButtonData.OK_DONE);
+        resultDialog.getDialogPane().getButtonTypes().add(type);
+        Button button = (Button) resultDialog.getDialogPane().lookupButton(type);
+        button.setOnAction((event) -> {
+            newGame(stage);
+        });
+        
         stage.setTitle("Line 98");
         stage.setScene(scene);
         stage.show();
