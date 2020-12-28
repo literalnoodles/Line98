@@ -143,9 +143,9 @@ public class Line98 extends Application {
         }
         
         if (!clearOnPiece(piece)) {
-            growAllPiece();
+            List<int[]> growList = growAllPieces();
+            clearOnMultiPiece(growList);
             generateSeed();
-            clearOnPiece(piece);
         }
         scoreboard.updateScore();
     }
@@ -257,29 +257,37 @@ public class Line98 extends Application {
         if (piece.pType != Piece.PieceType.SEED) return;
         Piece.ColorType oldColor = pieceArray[piece.x][piece.y].cType;
         // remove the seed
-        deletePiece(piece);
+        deletePiece(piece.x, piece.y);
         // generate Piece
         makePiece(Piece.PieceType.FULL, oldColor, piece.x, piece.y);
     }
     
-    private static void growAllPiece() {
+    private static List<int[]> growAllPieces() {
+        List<int[]> growList = new ArrayList<>();
         for (int x = 0; x < X_TILES; x++) {
             for (int y = 0; y < Y_TILES; y++) {
                 Piece piece = pieceArray[x][y];
                 if (piece != null && piece.pType == Piece.PieceType.SEED) {
                     growPiece(piece);
+                    int[] cor = {piece.x, piece.y};
+                    growList.add(cor);
                 }
             }
         }
+        return growList;
     }
     
-    private static void deletePiece(Piece piece) {
-        int x = piece.x;
-        int y = piece.y;
+    private static void deletePiece(int x, int y) {
         Piece oldPiece = pieceArray[x][y];
+        if (oldPiece == null)
+            return ;
+        
+        if (oldPiece.pType == Piece.PieceType.FULL) {
+            totalScore += 10;
+        }
+        
         pieceGroup.getChildren().remove(oldPiece);
         pieceArray[x][y] = null;
-        
     }
     
     private static List<int[]> getSameType(Piece piece, int dirX, int dirY) {
@@ -309,13 +317,11 @@ public class Line98 extends Application {
         return list;
     }
     
-    private static boolean clearOnPiece(Piece piece) {
+    private static List<int[]> getSameType(Piece piece) {
         int x = piece.x;
         int y = piece.y;
         Piece.ColorType color = piece.cType;
         List<int[]> clearPieces = new ArrayList<>();
-        int[] p = {piece.x, piece.y};
-        clearPieces.add(p);
         for (int[] dir : clearDir) {
             // check for first direction
             List<int[]> addList = new ArrayList<>();
@@ -331,18 +337,48 @@ public class Line98 extends Application {
                 // add to clearPieces
             }
         }
+        return clearPieces;
+    }
+    
+    private static boolean clearOnPiece(Piece piece) {
+        List<int[]> clearPieces = new ArrayList<>();
+        clearPieces.addAll(getSameType(piece));
+        int[] p = {piece.x, piece.y};
+        clearPieces.add(p);
         
         if (clearPieces.size() > 1) {
             for (int[] coordinate : clearPieces) {
                 int cx = coordinate[0];
                 int cy = coordinate[1];
-                deletePiece(pieceArray[cx][cy]);
+                deletePiece(cx, cy);
             }
-            totalScore += clearPieces.size() * 10;
             return true;
         }
         
         return false;
+    }
+    
+    private static void clearOnMultiPiece(List<int[]> list) {
+        List<int[]> clearList = new ArrayList<>();
+        for (int[] cor : list) {
+            int x = cor[0];
+            int y = cor[1];
+            List<int[]> clearPieces = new ArrayList<>();
+            clearPieces.addAll(getSameType(pieceArray[x][y]));
+            if (clearPieces.size() > 0) {
+                clearList.addAll(clearPieces);
+                int[] p = {x, y};
+                clearList.add(p);
+            }
+        }
+        
+        if (clearList.size() > 0) {
+            for (int[] coordinate : clearList) {
+                int cx = coordinate[0];
+                int cy = coordinate[1];
+                deletePiece(cx, cy);
+            }
+        }
     }
     
     public static Group tileGroup;
