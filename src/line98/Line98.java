@@ -13,7 +13,6 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.stream.Collectors;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
 import javafx.scene.Group;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,7 +22,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-
 /**
  *
  * @author prdox
@@ -151,7 +149,14 @@ public class Line98 extends Application {
             List<int[]> growList = growAllPieces();
             clearOnMultiPiece(growList);
             if (!generateSeed()) {
-                resultDialog.setContentText("Your score is " + totalScore + "\nClick OK to start a new game");
+                db.insertScore(totalScore);
+                List<Integer> scoreList = db.getTopScore();
+                String result = "";
+                if (scoreList.get(0) == totalScore) {
+                    result += "You reached a new highscore!!!\n";
+                }
+                result += "Your score is " + totalScore + "\nClick OK to start a new game";
+                resultDialog.setContentText(result);
                 resultDialog.show();
             };
         }
@@ -397,6 +402,7 @@ public class Line98 extends Application {
     public static Tile[][] grid;
     public static ScoreBoard scoreboard;
     public static Dialog<String> resultDialog;
+    public static DbConnection db;
 
     @Override
     public void start(Stage primaryStage) {
@@ -406,6 +412,7 @@ public class Line98 extends Application {
     public void newGame(Stage stage) {
         init();
         Scene scene = new Scene(createContent());
+        scoreboard.updateHighScore();
         scoreboard.newgameBtn.setOnAction(e -> {
             newGame(stage);
         });
@@ -436,6 +443,7 @@ public class Line98 extends Application {
         pieceArray = new Piece[X_TILES][Y_TILES];
         grid = new Tile[X_TILES][Y_TILES];
         totalScore = 0;
+        db = DbConnection.getInstance();
     }
 
     /**

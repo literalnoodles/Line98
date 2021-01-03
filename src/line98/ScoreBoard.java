@@ -5,6 +5,7 @@
  */
 package line98;
 
+import java.util.List;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -21,6 +22,7 @@ import javafx.scene.text.Text;
 public class ScoreBoard extends StackPane{
     
     private Text score;
+    private Text highScore;
     protected Button newgameBtn;
     
     public ScoreBoard() {
@@ -46,17 +48,30 @@ public class ScoreBoard extends StackPane{
         score.setFont(Font.font("", FontWeight.BOLD, FontPosture.REGULAR, 30));
         score.setTranslateY(-(Line98.TILE_SIZE * Line98.Y_TILES / 2 - 70));
         
-        Text highScore = new Text();
+        highScore = new Text();
         highScore.setText(String.valueOf(3000));
-        highScore.setFont(Font.font("", FontWeight.BOLD, FontPosture.REGULAR, 30));
-        highScore.setTranslateY(-(Line98.TILE_SIZE * Line98.Y_TILES / 2 - 190));
+        highScore.setFont(Font.font("", FontWeight.LIGHT, FontPosture.REGULAR, 24));
+        highScore.setTranslateY(-(Line98.TILE_SIZE * Line98.Y_TILES / 2 - 280));
         
-        newgameBtn = new Button("New game"); 
+        newgameBtn = new Button("New game");
+        newgameBtn.setTranslateY(-(Line98.TILE_SIZE * Line98.Y_TILES / 2 - 400));
         
         getChildren().addAll(board, text, score, text2, highScore, newgameBtn);
     }
     
     public void updateScore() {
         score.setText(String.valueOf(Line98.totalScore));
+    }
+    
+    public void updateHighScore() {
+        DbConnection db = DbConnection.getInstance();
+        String allScore = "";
+        db.getTopScoreWithDate();
+        List<Integer> listScore = db.getTopScore();
+        for (Integer sc : listScore) {
+            allScore += String.valueOf(sc) + "\n";
+        }
+        
+        highScore.setText(allScore);
     }
 }
